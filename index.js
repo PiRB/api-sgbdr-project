@@ -26,5 +26,5 @@ app.use(express.urlencoded({
 app.use('/api', routes);
 const port = process.env.PORT || 1234
 app.listen(port, () => {
-  console.log('http://localhost:8080/api');
+  console.log(`http://localhost:${port}/api`);
 })
