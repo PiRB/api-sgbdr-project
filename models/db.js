@@ -1,18 +1,21 @@
-const mysql = require('mysql');
-const databaseConfig = require('../config/db.js');
 
-const connection = mysql.createConnection({
-  host: databaseConfig.HOST,
-  port: databaseConfig.PORT,
-  user: databaseConfig.USER,
-  password: databaseConfig.PASSWORD,
-  schema: databaseConfig.SCHEMA,
+const mariaDB = require('mariadb');
+const config = require('../config/db.js');
 
+const connection = mariaDB.createPool({
+  host: config.HOST,
+  user: config.USER,
+  password: config.PASSWORD,
+  port: config.PORT,
+  database: config.DATABASE
 });
 
-connection.connect(err => {
-  if(err) throw err;
-  console.log('Successfully logged');
-});
+connection.getConnection()
+  .then(() => {
+    console.log('Successfully connected');
+  })
+  .catch((err) => {
+    throw err;
+  });
 
 module.exports = connection;

@@ -1,7 +1,9 @@
+require('dotenv').config();
+
 module.exports = {
-  HOST: '163.172.130.142',
-  PORT: '3310',
-  USER: 'etudiant',
-  PASSWORD: 'CrERP29qwMNvcbnAMgLzW9CwuTC5eJHn',
-  SCHEMA: 'sakila'
-}
+  HOST: process.env.HOST,
+  USER: process.env.USER,
+  PASSWORD: process.env.PASSWORD,
+  PORT: process.env.PORT,
+  DATABASE: process.env.DATABASE
+};

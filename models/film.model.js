@@ -1,42 +1,42 @@
 const mariaDB = require('./db');
 
-exports.fetchAll = (limit, page, orderColumn, orderDesc, result) => {
+exports.fetchAll = async (limit = 10, page = 1, orderColumn = 1, orderDesc = 0, result) => {
   const orderColumns = {
     1: 'film.title',
-    2: 'payment.price',
+    2: 'price',
     3: 'rating',
-    4: 'category.name',
-    5: 'nbOfRate',
+    4: 'category',
+    5: 'nbOfRates',
   }
-
-  let query = `
-    select film.title, rating, category.name, count(rent.rental_id) as nbOfRate, payment.price
-    from film
-    inner join film_category AS film_category ON film.film_id = film_category.film_id
-    inner join category AS category ON film_category.category_id = category.category_id
-    inner join inventory AS inventory ON film.film_id = inventory.film_id
-    inner join rental AS rental ON inv.inventory_id = rent.inventory_id
-    inner join payment AS payment ON rental.rental_id = payment.rental_id
-    group by film.title
-    order by ${!orderColumns[orderColumn] ? 'film.title' : orderColumns[orderColumn]} ${Number(orderDesc) === 1 ? 'desc' : 'asc'}
-    limit ${limit}
-    offset ${(page - 1) * limit};
-  `;
-
   const data = {};
+  let nbFilms = 0;
 
-  mariaDB.query(query, (err, res) => {
-    if(err) throw err;
-    data.films = res;
-  });
+  try {
+    let queryNbOfFilms = `
+      select count(film_id) as nbFilms from film
+    `;
+    const nbOfFilms = await mariaDB.query(queryNbOfFilms);
+    nbFilms = nbOfFilms[0].nbFilms
+    data.nbPages = nbOfFilms[0].nbFilms / (Number(limit) === 0 ? 1 : limit);
 
-  let queryNumberOfFilms = `
-    select count(film_id) as nbOfFilms from film
-  `
-
-  mariaDB.query(queryNumberOfFilms, (err, res) => {
-    if(err) throw err;
-    data.nbOfPages = res[0].nbOfFilms / limit;
+    let query = `
+      select title, rating, category.name as category, count(rental.rental_id) as nbOfRates, payment.amount as price
+      from film
+      left join film_category using(film_id)
+      left join category using(category_id)
+      left join inventory using(film_id)
+      left join rental using(inventory_id)
+      left join payment using(rental_id)
+      group by film.title
+      order by ${!orderColumns[orderColumn] ? 'film.title' : orderColumns[orderColumn]} ${Number(orderDesc) === 1 ? 'desc' : 'asc'}
+      ${limit > 0 ? `limit ${limit}` : `limit ${nbFilms}`}
+      offset ${(page - 1) * limit};
+    `;
+    const films = await mariaDB.query(query);
+    data.films = films;
+    
     result(null, data);
-  });
+  } catch (error) {
+    throw error;
+  }
 }
