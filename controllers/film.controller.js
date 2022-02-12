@@ -6,7 +6,7 @@ exports.getAll = (req, res) => {
   const orderColumn = req.query.orderColumn;
   const orderDesc = req.query.orderDesc;
 
-  Film.fetchAll(limit, page, orderColumn, orderDesc, (err, res) => {
+  Film.fetchAll(limit, page, orderColumn, orderDesc, (err, data) => {
     if(err) { const { msg } = err; res.status(500).send({ msg }); }
     res.send(data)
   });
