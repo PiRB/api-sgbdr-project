@@ -6,7 +6,7 @@ const connection = mariaDB.createPool({
   host: config.HOST,
   user: config.USER,
   password: config.PASSWORD,
-  port: config.PORT,
+  port: config.DB_PORT,
   database: config.DATABASE
 });
 
